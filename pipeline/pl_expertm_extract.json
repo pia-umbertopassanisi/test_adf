@@ -255,18 +255,7 @@
 				"type": "Array",
 				"defaultValue": [
 					"Eol_CDB_PIA01_PIA49",
-					"Exp_CDB_PIA01_PIA79",
-					"Exp_CDB_PIA01_PIA80",
-					"Exp_CDB_PIA01_PIA81",
-					"Exp_CDB_PIA01_PIA82",
-					"Exp_CDB_PIA01_PIA83",
-					"Exp_CDB_PIA01_PIA84",
-					"Exp_CDB_PIA01_PIA85",
-					"Exp_CDB_PIA01_PIA86",
-					"Exp_CDB_PIA01_PIA87",
-					"Exp_CDB_PIA01_PIA88",
-					"Exp_CDB_PIA01_PIA89",
-					"Exp_CDB_PIA01_PIA90"
+					"Exp_CDB_PIA01_PIA79"
 				]
 			}
 		},
