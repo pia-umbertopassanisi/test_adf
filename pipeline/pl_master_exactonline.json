@@ -3,6 +3,51 @@
 	"properties": {
 		"activities": [
 			{
+				"name": "GetDivisions",
+				"type": "AzureFunctionActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "00:02:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"functionName": "get_divisions",
+					"method": "GET"
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_func_exactonline",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "SetDivisions",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "GetDivisions",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "v_Divisions",
+					"value": {
+						"value": "@activity('GetDivisions').output.divisions",
+						"type": "Expression"
+					}
+				}
+			},
+			{
 				"name": "SetYears",
 				"type": "SetVariable",
 				"dependsOn": [],
@@ -28,12 +73,18 @@
 						"dependencyConditions": [
 							"Succeeded"
 						]
+					},
+					{
+						"activity": "SetDivisions",
+						"dependencyConditions": [
+							"Succeeded"
+						]
 					}
 				],
 				"userProperties": [],
 				"typeProperties": {
 					"items": {
-						"value": "@pipeline().parameters.p_Divisions",
+						"value": "@if(greater(length(pipeline().parameters.p_Divisions), 0), pipeline().parameters.p_Divisions, variables('v_Divisions'))",
 						"type": "Expression"
 					},
 					"isSequential": true,
@@ -129,16 +180,7 @@
 		"parameters": {
 			"p_Divisions": {
 				"type": "Array",
-				"defaultValue": [
-					1070950,
-					1109346,
-					1131744,
-					1217756,
-					1217757,
-					1217645,
-					1217761,
-					1224437
-				]
+				"defaultValue": []
 			},
 			"p_ModifiedSince": {
 				"type": "String"
@@ -146,6 +188,9 @@
 		},
 		"variables": {
 			"v_Years": {
+				"type": "Array"
+			},
+			"v_Divisions": {
 				"type": "Array"
 			}
 		},
