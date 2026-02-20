@@ -147,6 +147,10 @@
 						"p_ModifiedSince": {
 							"value": "@pipeline().parameters.p_ModifiedSince",
 							"type": "Expression"
+						},
+						"p_Divisions": {
+							"value": "@if(greater(length(pipeline().parameters.p_Divisions), 0), pipeline().parameters.p_Divisions, variables('v_Divisions'))",
+							"type": "Expression"
 						}
 					}
 				}

@@ -3,280 +3,352 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "ExtractCRMAccountsOps",
-				"type": "ExecutePipeline",
+				"name": "ForEachDivision",
+				"description": "Iterates over divisions sequentially, extracting all operations entities per division.",
+				"type": "ForEach",
 				"dependsOn": [],
-				"policy": {
-					"secureInput": false
-				},
 				"userProperties": [],
 				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_extract_entity",
-						"type": "PipelineReference"
+					"items": {
+						"value": "@pipeline().parameters.p_Divisions",
+						"type": "Expression"
 					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"p_BaseUrl": "https://start.exactonline.be/api/v1/1070950/bulk/CRM/Accounts",
-						"p_SelectFields": "ID,Code,Accountant,Email,Language,City,AddressLine1,Name,VATNumber,IsSupplier,Status,Phone,Country,Postcode,StartDate,EndDate,Classification1",
-						"p_EntityName": "CRMAccountsOps",
-						"p_Division": 1070950,
-						"p_SleepMs": 1001
-					}
-				}
-			},
-			{
-				"name": "ExtractAccountClassifications",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "ExtractCRMAccountsOps",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_extract_entity",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"p_BaseUrl": "https://start.exactonline.be/api/v1/1070950/crm/AccountClassifications",
-						"p_SelectFields": "AccountClassificationName,AccountClassificationNameDescription,Code,Created,Creator,CreatorFullName,Description,Division,ID,Modified,Modifier,ModifierFullName",
-						"p_EntityName": "AccountClassifications",
-						"p_Division": 1070950,
-						"p_SleepMs": 1001
-					}
-				}
-			},
-			{
-				"name": "ExtractEmployees",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "ExtractAccountClassifications",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_extract_entity",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"p_BaseUrl": "https://start.exactonline.be/api/v1/1070950/payroll/Employees",
-						"p_SelectFields": "ActiveEmployment,Municipality,ID,AddressLine2,AddressLine3,AddressStreet,AddressStreetNumber,AddressStreetNumberSuffix,BirthDate,BirthName,BirthNamePrefix,BirthPlace,BusinessEmail,BusinessFax,BusinessMobile,BusinessPhone,BusinessPhoneExtension,City,Code,Country,Created,Creator,CreatorFullName,Customer,Division,Email,EmployeeHID,EndDate,FirstName,FullName,Gender,HID,Initials,IsActive,IsAnonymised,Language,LastName,LocationDescription,Manager,MaritalDate,MaritalStatus,MiddleName,Mobile,Modified,Modifier,ModifierFullName,NameComposition,Nationality,NickName,Notes,PartnerName,PartnerNamePrefix,Person,Phone,PhoneExtension,Picture,PictureFileName,PictureThumbnailUrl,PictureUrl,Postcode,PrivateEmail,SocialSecurityNumber,State,StartDate,Title,User,UserFullName,CustomField",
-						"p_EntityName": "Employees",
-						"p_Division": 1070950,
-						"p_SleepMs": 1001
-					}
-				}
-			},
-			{
-				"name": "ExtractItems",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "ExtractEmployees",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_extract_entity",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"p_BaseUrl": "https://start.exactonline.be/api/v1/1070950/read/project/HourTypes",
-						"p_SelectFields": "ItemId,ItemCode,ItemDescription",
-						"p_EntityName": "Items",
-						"p_Division": 1070950,
-						"p_SleepMs": 1001
-					}
-				}
-			},
-			{
-				"name": "ExtractVoorschotItems",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "ExtractItems",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_extract_entity",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"p_BaseUrl": "https://start.exactonline.be/api/v1/1070950/read/project/CostTypes",
-						"p_SelectFields": "ItemId,ItemCode,ItemDescription",
-						"p_EntityName": "VoorschotItems",
-						"p_Division": 1070950,
-						"p_SleepMs": 1001
-					}
-				}
-			},
-			{
-				"name": "ExtractSalesInvoices",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "ExtractVoorschotItems",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_extract_entity",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"p_BaseUrl": "https://start.exactonline.be/api/v1/1070950/salesinvoice/SalesInvoices",
-						"p_SelectFields": "AmountFC,AmountDiscount,AmountDC,AmountDiscountExclVat,AmountFCExclVat,Created,Creator,CreatorFullName,Currency,DeliverTo,DeliverToContactPerson,DeliverToContactPersonFullName,DeliverToAddress,DeliverToName,Description,Discount,DiscountType,Division,Document,DocumentNumber,DocumentSubject,DueDate,ExtraDutyAmountFC,GAccountAmountFC,IncotermAddress,IncotermCode,IncotermVersion,InvoiceDate,InvoiceID,InvoiceTo,InvoiceToContactPerson,InvoiceToContactPersonFullName,InvoiceToName,InvoiceNumber,IsExtraDuty,Journal,JournalDescription,Modified,Modifier,ModifierFullName,OrderDate,OrderedBy,OrderedByContactPerson,OrderedByContactPersonFullName,OrderedByName,OrderNumber,PaymentCondition,PaymentConditionDescription,PaymentReference,Remarks,SalesChannel,SalesChannelCode,SalesChannelDescription,Salesperson,SalespersonFullName,SelectionCode,SelectionCodeCode,SelectionCodeDescription,ShippingMethod,ShippingMethodCode,ShippingMethodDescription,Status,StatusDescription,TaxSchedule,TaxScheduleCode,TaxScheduleDescription,Type,TypeDescription,VATAmountFC,VATAmountDC,YourRef,StarterSalesInvoiceStatus,StarterSalesInvoiceStatusDescription,WithholdingTaxAmountFC,WithholdingTaxBaseAmount,WithholdingTaxPercentage,Warehouse",
-						"p_EntityName": "SalesInvoices",
-						"p_Division": 1070950,
-						"p_SleepMs": 1001
-					}
-				}
-			},
-			{
-				"name": "ExtractSalesInvoiceLines",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "ExtractSalesInvoices",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_extract_entity",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"p_BaseUrl": "https://start.exactonline.be/api/v1/1070950/salesinvoice/SalesInvoiceLines",
-						"p_SelectFields": "AmountFC,CostCenter,CostCenterDescription,CostUnit,CostUnitDescription,CustomerItemCode,DeliveryDate,Description,Discount,Division,Employee,EmployeeFullName,EndTime,ExtraDutyAmountFC,ExtraDutyPercentage,GLAccount,GLAccountDescription,ID,InvoiceID,Item,ItemDescription,ItemCode,LineNumber,NetPrice,Notes,Pricelist,PricelistDescription,Project,ProjectDescription,ProjectWBS,ProjectWBSDescription,Quantity,SalesOrder,SalesOrderLine,SalesOrderLineNumber,SalesOrderNumber,StartTime,Subscription,SubscriptionDescription,UnitCode,UnitDescription,UnitPrice,TaxSchedule,TaxScheduleCode,TaxScheduleDescription,VATAmountFC,VATAmountDC,VATCode,VATCodeDescription,VATPercentage,CustomField",
-						"p_EntityName": "SalesInvoiceLines",
-						"p_Division": 1070950,
-						"p_SleepMs": 1001
-					}
-				}
-			},
-			{
-				"name": "ExtractTimeTransactions",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "ExtractSalesInvoiceLines",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_extract_entity",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"p_BaseUrl": "https://start.exactonline.be/api/v1/1070950/project/TimeTransactions",
-						"p_SelectFields": "Amount,Price,Account,AccountName,Activity,ActivityDescription,AmountFC,Attachment,Created,Creator,CreatorFullName,Currency,CustomField,Date,Division,DivisionDescription,Employee,EndTime,EntryNumber,ErrorText,HourStatus,ID,Item,ItemDescription,ItemDivisable,Modified,ModifierFullName,Notes,PriceFC,Project,ProjectAccount,ProjectAccountCode,ProjectAccountName,ProjectCode,ProjectDescription,Quantity,StartTime,Subscription,SubscriptionAccount,SubscriptionAccountCode,SubscriptionAccountName,SubscriptionDescription,SubscriptionNumber,Type,SkipValidation",
-						"p_EntityName": "TimeTransactions",
-						"p_Division": 1070950,
-						"p_SleepMs": 1001,
-						"p_ModifiedSince": {
-							"value": "@pipeline().parameters.p_ModifiedSince",
-							"type": "Expression"
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "ExtractCRMAccountsOps",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_extract_entity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_BaseUrl": {
+										"value": "@concat('https://start.exactonline.be/api/v1/', string(item()), '/bulk/CRM/Accounts')",
+										"type": "Expression"
+									},
+									"p_SelectFields": "ID,Code,Accountant,Email,Language,City,AddressLine1,Name,VATNumber,IsSupplier,Status,Phone,Country,Postcode,StartDate,EndDate,Classification1",
+									"p_EntityName": "CRMAccountsOps",
+									"p_Division": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"p_SleepMs": 1001
+								}
+							}
+						},
+						{
+							"name": "ExtractAccountClassifications",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "ExtractCRMAccountsOps",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_extract_entity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_BaseUrl": {
+										"value": "@concat('https://start.exactonline.be/api/v1/', string(item()), '/crm/AccountClassifications')",
+										"type": "Expression"
+									},
+									"p_SelectFields": "AccountClassificationName,AccountClassificationNameDescription,Code,Created,Creator,CreatorFullName,Description,Division,ID,Modified,Modifier,ModifierFullName",
+									"p_EntityName": "AccountClassifications",
+									"p_Division": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"p_SleepMs": 1001
+								}
+							}
+						},
+						{
+							"name": "ExtractEmployees",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "ExtractAccountClassifications",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_extract_entity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_BaseUrl": {
+										"value": "@concat('https://start.exactonline.be/api/v1/', string(item()), '/payroll/Employees')",
+										"type": "Expression"
+									},
+									"p_SelectFields": "ActiveEmployment,Municipality,ID,AddressLine2,AddressLine3,AddressStreet,AddressStreetNumber,AddressStreetNumberSuffix,BirthDate,BirthName,BirthNamePrefix,BirthPlace,BusinessEmail,BusinessFax,BusinessMobile,BusinessPhone,BusinessPhoneExtension,City,Code,Country,Created,Creator,CreatorFullName,Customer,Division,Email,EmployeeHID,EndDate,FirstName,FullName,Gender,HID,Initials,IsActive,IsAnonymised,Language,LastName,LocationDescription,Manager,MaritalDate,MaritalStatus,MiddleName,Mobile,Modified,Modifier,ModifierFullName,NameComposition,Nationality,NickName,Notes,PartnerName,PartnerNamePrefix,Person,Phone,PhoneExtension,Picture,PictureFileName,PictureThumbnailUrl,PictureUrl,Postcode,PrivateEmail,SocialSecurityNumber,State,StartDate,Title,User,UserFullName,CustomField",
+									"p_EntityName": "Employees",
+									"p_Division": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"p_SleepMs": 1001
+								}
+							}
+						},
+						{
+							"name": "ExtractItems",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "ExtractEmployees",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_extract_entity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_BaseUrl": {
+										"value": "@concat('https://start.exactonline.be/api/v1/', string(item()), '/read/project/HourTypes')",
+										"type": "Expression"
+									},
+									"p_SelectFields": "ItemId,ItemCode,ItemDescription",
+									"p_EntityName": "Items",
+									"p_Division": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"p_SleepMs": 1001
+								}
+							}
+						},
+						{
+							"name": "ExtractVoorschotItems",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "ExtractItems",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_extract_entity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_BaseUrl": {
+										"value": "@concat('https://start.exactonline.be/api/v1/', string(item()), '/read/project/CostTypes')",
+										"type": "Expression"
+									},
+									"p_SelectFields": "ItemId,ItemCode,ItemDescription",
+									"p_EntityName": "VoorschotItems",
+									"p_Division": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"p_SleepMs": 1001
+								}
+							}
+						},
+						{
+							"name": "ExtractSalesInvoices",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "ExtractVoorschotItems",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_extract_entity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_BaseUrl": {
+										"value": "@concat('https://start.exactonline.be/api/v1/', string(item()), '/salesinvoice/SalesInvoices')",
+										"type": "Expression"
+									},
+									"p_SelectFields": "AmountFC,AmountDiscount,AmountDC,AmountDiscountExclVat,AmountFCExclVat,Created,Creator,CreatorFullName,Currency,DeliverTo,DeliverToContactPerson,DeliverToContactPersonFullName,DeliverToAddress,DeliverToName,Description,Discount,DiscountType,Division,Document,DocumentNumber,DocumentSubject,DueDate,ExtraDutyAmountFC,GAccountAmountFC,IncotermAddress,IncotermCode,IncotermVersion,InvoiceDate,InvoiceID,InvoiceTo,InvoiceToContactPerson,InvoiceToContactPersonFullName,InvoiceToName,InvoiceNumber,IsExtraDuty,Journal,JournalDescription,Modified,Modifier,ModifierFullName,OrderDate,OrderedBy,OrderedByContactPerson,OrderedByContactPersonFullName,OrderedByName,OrderNumber,PaymentCondition,PaymentConditionDescription,PaymentReference,Remarks,SalesChannel,SalesChannelCode,SalesChannelDescription,Salesperson,SalespersonFullName,SelectionCode,SelectionCodeCode,SelectionCodeDescription,ShippingMethod,ShippingMethodCode,ShippingMethodDescription,Status,StatusDescription,TaxSchedule,TaxScheduleCode,TaxScheduleDescription,Type,TypeDescription,VATAmountFC,VATAmountDC,YourRef,StarterSalesInvoiceStatus,StarterSalesInvoiceStatusDescription,WithholdingTaxAmountFC,WithholdingTaxBaseAmount,WithholdingTaxPercentage,Warehouse",
+									"p_EntityName": "SalesInvoices",
+									"p_Division": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"p_SleepMs": 1001
+								}
+							}
+						},
+						{
+							"name": "ExtractSalesInvoiceLines",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "ExtractSalesInvoices",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_extract_entity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_BaseUrl": {
+										"value": "@concat('https://start.exactonline.be/api/v1/', string(item()), '/salesinvoice/SalesInvoiceLines')",
+										"type": "Expression"
+									},
+									"p_SelectFields": "AmountFC,CostCenter,CostCenterDescription,CostUnit,CostUnitDescription,CustomerItemCode,DeliveryDate,Description,Discount,Division,Employee,EmployeeFullName,EndTime,ExtraDutyAmountFC,ExtraDutyPercentage,GLAccount,GLAccountDescription,ID,InvoiceID,Item,ItemDescription,ItemCode,LineNumber,NetPrice,Notes,Pricelist,PricelistDescription,Project,ProjectDescription,ProjectWBS,ProjectWBSDescription,Quantity,SalesOrder,SalesOrderLine,SalesOrderLineNumber,SalesOrderNumber,StartTime,Subscription,SubscriptionDescription,UnitCode,UnitDescription,UnitPrice,TaxSchedule,TaxScheduleCode,TaxScheduleDescription,VATAmountFC,VATAmountDC,VATCode,VATCodeDescription,VATPercentage,CustomField",
+									"p_EntityName": "SalesInvoiceLines",
+									"p_Division": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"p_SleepMs": 1001
+								}
+							}
+						},
+						{
+							"name": "ExtractTimeTransactions",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "ExtractSalesInvoiceLines",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_extract_entity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_BaseUrl": {
+										"value": "@concat('https://start.exactonline.be/api/v1/', string(item()), '/project/TimeTransactions')",
+										"type": "Expression"
+									},
+									"p_SelectFields": "Amount,Price,Account,AccountName,Activity,ActivityDescription,AmountFC,Attachment,Created,Creator,CreatorFullName,Currency,CustomField,Date,Division,DivisionDescription,Employee,EndTime,EntryNumber,ErrorText,HourStatus,ID,Item,ItemDescription,ItemDivisable,Modified,ModifierFullName,Notes,PriceFC,Project,ProjectAccount,ProjectAccountCode,ProjectAccountName,ProjectCode,ProjectDescription,Quantity,StartTime,Subscription,SubscriptionAccount,SubscriptionAccountCode,SubscriptionAccountName,SubscriptionDescription,SubscriptionNumber,Type,SkipValidation",
+									"p_EntityName": "TimeTransactions",
+									"p_Division": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"p_SleepMs": 1001,
+									"p_ModifiedSince": {
+										"value": "@pipeline().parameters.p_ModifiedSince",
+										"type": "Expression"
+									}
+								}
+							}
+						},
+						{
+							"name": "ExtractProjects",
+							"type": "ExecutePipeline",
+							"dependsOn": [
+								{
+									"activity": "ExtractTimeTransactions",
+									"dependencyConditions": [
+										"Completed"
+									]
+								}
+							],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_extract_entity",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"p_BaseUrl": {
+										"value": "@concat('https://start.exactonline.be/api/v1/', string(item()), '/project/Projects')",
+										"type": "Expression"
+									},
+									"p_SelectFields": "Account,AccountCode,AccountName,AllowAdditionalInvoicing,BlockEntry,BlockInvoicing,BlockPlanning,BudgetedAmount,BudgetedCosts,BudgetedRevenue,BudgetType,BudgetTypeDescription,BlockPurchasing,BlockRebilling,Classification,ClassificationDescription,Code,CostsAmountFC,Created,Creator,CreatorFullName,CustomerPOnumber,Description,Division,DivisionName,EnableWorkInProgress,EndDate,FixedPriceItem,FixedPriceItemDescription,HasWBSLines,ID,IncludeInvoiceSpecification,IncludeSpecificationInInvoicePdf,InvoiceAddress,InvoiceDescription,InvoiceAsQuoted,IsWBSRequiredForEntry,Manager,ManagerFullname,MarkupPercentage,Modified,Modifier,ModifierFullName,Notes,InternalNotes,SalesTimeQuantity,SourceQuotation,StartDate,TimeQuantityToAlert,Type,TypeDescription,PaymentCondition,PrepaidItem,PrepaidItemDescription,PrepaidType,PrepaidTypeDescription,UseBillingMilestones,BudgetOverrunHours,CustomField,AllowMemberEntryOnly",
+									"p_EntityName": "Projects",
+									"p_Division": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"p_SleepMs": 1001
+								}
+							}
 						}
-					}
-				}
-			},
-			{
-				"name": "ExtractProjects",
-				"type": "ExecutePipeline",
-				"dependsOn": [
-					{
-						"activity": "ExtractTimeTransactions",
-						"dependencyConditions": [
-							"Completed"
-						]
-					}
-				],
-				"policy": {
-					"secureInput": false
-				},
-				"userProperties": [],
-				"typeProperties": {
-					"pipeline": {
-						"referenceName": "pl_extract_entity",
-						"type": "PipelineReference"
-					},
-					"waitOnCompletion": true,
-					"parameters": {
-						"p_BaseUrl": "https://start.exactonline.be/api/v1/1070950/project/Projects",
-						"p_SelectFields": "Account,AccountCode,AccountName,AllowAdditionalInvoicing,BlockEntry,BlockInvoicing,BlockPlanning,BudgetedAmount,BudgetedCosts,BudgetedRevenue,BudgetType,BudgetTypeDescription,BlockPurchasing,BlockRebilling,Classification,ClassificationDescription,Code,CostsAmountFC,Created,Creator,CreatorFullName,CustomerPOnumber,Description,Division,DivisionName,EnableWorkInProgress,EndDate,FixedPriceItem,FixedPriceItemDescription,HasWBSLines,ID,IncludeInvoiceSpecification,IncludeSpecificationInInvoicePdf,InvoiceAddress,InvoiceDescription,InvoiceAsQuoted,IsWBSRequiredForEntry,Manager,ManagerFullname,MarkupPercentage,Modified,Modifier,ModifierFullName,Notes,InternalNotes,SalesTimeQuantity,SourceQuotation,StartDate,TimeQuantityToAlert,Type,TypeDescription,PaymentCondition,PrepaidItem,PrepaidItemDescription,PrepaidType,PrepaidTypeDescription,UseBillingMilestones,BudgetOverrunHours,CustomField,AllowMemberEntryOnly",
-						"p_EntityName": "Projects",
-						"p_Division": 1070950,
-						"p_SleepMs": 1001
-					}
+					]
 				}
 			}
 		],
 		"parameters": {
 			"p_ModifiedSince": {
 				"type": "String"
+			},
+			"p_Divisions": {
+				"type": "Array"
 			}
 		},
-		"annotations": [],
-		"lastPublishTime": "2026-02-09T16:34:56Z"
+		"annotations": []
 	},
 	"type": "Microsoft.DataFactory/factories/pipelines"
 }
