@@ -1,0 +1,28 @@
+{
+	"name": "tr_daily_odoo",
+	"properties": {
+		"description": "Daily trigger for ODOO extraction at 06:00 CET. Passes a 7-day lookback as modified_since for incremental extraction.",
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "pl_master_odoo",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"modified_since": "@formatDateTime(adddays(trigger().scheduledTime, -7), 'yyyy-MM-dd HH:mm:ss')"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2026-02-21T05:00:00",
+				"timeZone": "Romance Standard Time"
+			}
+		}
+	}
+}

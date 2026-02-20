@@ -1,0 +1,61 @@
+{
+	"name": "pl_odoo_extract_practice",
+	"properties": {
+		"description": "Child pipeline: extracts all ODOO models for a single practice via Azure Function calls.",
+		"activities": [
+			{
+				"name": "ForEachModel",
+				"description": "Iterates over ODOO models sequentially for the given practice.",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"isSequential": true,
+					"items": {
+						"value": "@pipeline().parameters.models",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "CallOdooExtract",
+							"description": "Calls the Azure Function to extract a single ODOO model.",
+							"type": "AzureFunctionActivity",
+							"dependsOn": [],
+							"userProperties": [],
+							"linkedServiceName": {
+								"referenceName": "ls_func_exactonline",
+								"type": "LinkedServiceReference"
+							},
+							"typeProperties": {
+								"functionName": "odoo_extract",
+								"method": "POST",
+								"body": {
+									"value": "@json(concat('{\"practice_id\":\"', pipeline().parameters.practice_id, '\",\"model\":\"', item(), '\",\"modified_since\":\"', pipeline().parameters.modified_since, '\"}'))",
+									"type": "Expression"
+								}
+							},
+							"policy": {
+								"timeout": "00:10:00",
+								"retry": 1,
+								"retryIntervalInSeconds": 60
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"practice_id": {
+				"type": "String"
+			},
+			"models": {
+				"type": "Array"
+			},
+			"modified_since": {
+				"type": "String",
+				"defaultValue": ""
+			}
+		},
+		"annotations": []
+	}
+}

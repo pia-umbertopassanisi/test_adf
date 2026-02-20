@@ -1,0 +1,103 @@
+{
+	"name": "pl_master_odoo",
+	"properties": {
+		"description": "Master pipeline: loops through ODOO practices, extracts all models via Azure Function, then triggers Databricks bronze load.",
+		"activities": [
+			{
+				"name": "ForEachPractice",
+				"description": "Iterates over ODOO practices sequentially (one practice at a time to respect API rate limits).",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"isSequential": true,
+					"items": {
+						"value": "@pipeline().parameters.practices",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "ExtractPractice",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_odoo_extract_practice",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"practice_id": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"models": {
+										"value": "@pipeline().parameters.models",
+										"type": "Expression"
+									},
+									"modified_since": {
+										"value": "@pipeline().parameters.modified_since",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "RunDatabricksBronzeLoad",
+				"description": "Runs the Databricks notebook to ingest ODOO Parquet files into Delta bronze tables.",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "ForEachPractice",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"userProperties": [],
+				"linkedServiceName": {
+					"referenceName": "ls_databricks_test",
+					"type": "LinkedServiceReference"
+				},
+				"typeProperties": {
+					"notebookPath": "/Shared/odoo/nb_odoo_bronze_load"
+				},
+				"policy": {
+					"timeout": "04:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 300
+				}
+			}
+		],
+		"parameters": {
+			"practices": {
+				"type": "Array",
+				"defaultValue": [
+					"PIA81-DSM"
+				]
+			},
+			"models": {
+				"type": "Array",
+				"defaultValue": [
+					"hr.employee",
+					"res.partner",
+					"account.analytic.line",
+					"account.move",
+					"account.move.line",
+					"resource.calendar",
+					"resource.calendar.attendance",
+					"hr.leave"
+				]
+			},
+			"modified_since": {
+				"type": "String",
+				"defaultValue": ""
+			}
+		},
+		"annotations": []
+	}
+}
