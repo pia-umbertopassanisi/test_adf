@@ -1,0 +1,7 @@
+{
+	"name": "PIA-SYNC05",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "DATACENTRE HOSTED - SYNC05 should have access to all DC VM's and data sources. "
+	}
+}
