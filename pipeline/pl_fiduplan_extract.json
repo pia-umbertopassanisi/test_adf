@@ -1,0 +1,266 @@
+{
+	"name": "pl_fiduplan_extract",
+	"properties": {
+		"description": "Master pipeline: loops through ExpertM databases and extracts all tables via child pipeline. After extraction, triggers Databricks bronze load.",
+		"activities": [
+			{
+				"name": "FilterExcludedDatabases",
+				"description": "Removes known-unavailable databases (not attached to SQL Server) from the run. Edit the excludedDatabases parameter to reintroduce individual databases.",
+				"type": "Filter",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.databases",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@not(contains(pipeline().parameters.excludedDatabases, item()))",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEachDatabase",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "FilterExcludedDatabases",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('FilterExcludedDatabases').output.Value",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"batchCount": 5,
+					"activities": [
+						{
+							"name": "ExtractDatabase",
+							"type": "ExecutePipeline",
+							"dependsOn": [],
+							"policy": {
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"pipeline": {
+									"referenceName": "pl_expertm_extract_db",
+									"type": "PipelineReference"
+								},
+								"waitOnCompletion": true,
+								"parameters": {
+									"databaseName": {
+										"value": "@item()",
+										"type": "Expression"
+									},
+									"tables": {
+										"value": "@pipeline().parameters.tables",
+										"type": "Expression"
+									},
+									"watermark": {
+										"value": "@pipeline().parameters.watermark",
+										"type": "Expression"
+									}
+								}
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "RunDatabricksBronzeLoad",
+				"type": "DatabricksNotebook",
+				"dependsOn": [
+					{
+						"activity": "ForEachDatabase",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "04:00:00",
+					"retry": 1,
+					"retryIntervalInSeconds": 300
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"notebookPath": "/Shared/expertm/nb_expertm_bronze_load"
+				},
+				"linkedServiceName": {
+					"referenceName": "ls_databricks_test",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"parameters": {
+			"databases": {
+				"type": "Array",
+				"defaultValue": [
+					"Exp_CDB_PIA01_3TC",
+					"Exp_CDB_PIA01_BVH",
+					"Exp_CDB_PIA01_FIDIAZ",
+					"Exp_CDB_PIA01_GEMIK",
+					"Exp_CDB_PIA01_GEPIA",
+					"Exp_CDB_PIA01_HAPIA",
+					"Exp_CDB_PIA01_LPI",
+					"Exp_CDB_PIA01_MONEA",
+					"Exp_CDB_PIA01_NAP",
+					"Exp_CDB_PIA01_PIA02",
+					"Exp_CDB_PIA01_PIA03",
+					"Exp_CDB_PIA01_PIA04",
+					"Exp_CDB_PIA01_PIA05",
+					"Exp_CDB_PIA01_PIA06",
+					"Exp_CDB_PIA01_PIA07",
+					"Exp_CDB_PIA01_PIA10",
+					"Exp_CDB_PIA01_PIA11",
+					"Exp_CDB_PIA01_PIA12bis",
+					"Exp_CDB_PIA01_PIA16",
+					"Exp_CDB_PIA01_PIA17",
+					"Exp_CDB_PIA01_PIA18",
+					"Exp_CDB_PIA01_PIA19",
+					"Exp_CDB_PIA01_PIA20",
+					"Exp_CDB_PIA01_PIA21",
+					"Exp_CDB_PIA01_PIA22",
+					"Exp_CDB_PIA01_PIA23",
+					"Exp_CDB_PIA01_PIA24",
+					"Exp_CDB_PIA01_PIA25",
+					"Exp_CDB_PIA01_PIA26",
+					"Exp_CDB_PIA01_PIA26a",
+					"Exp_CDB_PIA01_PIA26b",
+					"Exp_CDB_PIA01_PIA26c",
+					"Exp_CDB_PIA01_PIA27",
+					"Exp_CDB_PIA01_PIA28",
+					"Exp_CDB_PIA01_PIA29",
+					"Exp_CDB_PIA01_PIA30",
+					"Exp_CDB_PIA01_PIA31",
+					"Exp_CDB_PIA01_PIA32",
+					"Exp_CDB_PIA01_PIA33",
+					"Exp_CDB_PIA01_PIA34",
+					"Exp_CDB_PIA01_PIA35",
+					"Exp_CDB_PIA01_PIA36",
+					"Exp_CDB_PIA01_PIA37",
+					"Exp_CDB_PIA01_PIASAN",
+					"Exp_CDB_PIA01_PL",
+					"Exp_CDB_PIA01_VECT",
+					"Exp_CDB_PIA01_VMWP",
+					"Exp_CDB_PIA01_WVMP",
+					"Exp_CDB_PIA01_PIA38",
+					"Exp_CDB_PIA01_DSI",
+					"Exp_CDB_PIA01_THH",
+					"Exp_CDB_PIA01_PIA39",
+					"Exp_CDB_PIA01_PIAINT",
+					"Exp_CDB_PIA01_PIA40",
+					"Exp_CDB_PIA01_PIA41",
+					"Exp_CDB_PIA01_PIA41A",
+					"Exp_CDB_PIA01_PIA41B",
+					"Exp_CDB_PIA01_PIA41C",
+					"Exp_CDB_PIA01_PIA42",
+					"Exp_CDB_PIA01_PIA43",
+					"Exp_CDB_PIA01_PIA44",
+					"Exp_CDB_PIA01_BASO",
+					"Exp_CDB_PIA01_PIA45",
+					"Exp_CDB_PIA01_PIA46",
+					"Exp_CDB_PIA01_PIA47",
+					"Exp_CDB_PIA01_PIA48A",
+					"Exp_CDB_PIA01_PIA48B",
+					"Exp_CDB_PIA01_PIA43B",
+					"Eol_CDB_PIA01_PIA49",
+					"Exp_CDB_PIA01_PIA50",
+					"Exp_CDB_PIA01_PIA43C",
+					"Exp_CDB_PIA01_PIA51",
+					"Exp_CDB_PIA01_PIA52",
+					"Exp_CDB_PIA01_PIA53",
+					"Exp_CDB_PIA01_FIH",
+					"Exp_CDB_PIA01_PIA54",
+					"Exp_CDB_PIA01_PIA55",
+					"Exp_CDB_PIA01_KAT",
+					"Exp_CDB_PIA01_PIA56",
+					"Exp_CDB_PIA01_PIA57",
+					"Exp_CDB_PIA01_PIA58",
+					"Exp_CDB_PIA01_PIA59",
+					"Exp_CDB_PIA01_PIA60",
+					"Exp_CDB_PIA01_PIA61",
+					"Exp_CDB_PIA01_PIA62",
+					"Exp_CDB_PIA01_PIA63",
+					"Exp_CDB_PIA01_PIA64",
+					"Exp_CDB_PIA01_PIA65",
+					"Exp_CDB_PIA01_PIA66",
+					"Exp_CDB_PIA01_PIA67",
+					"Exp_CDB_PIA01_PIA68",
+					"Exp_CDB_PIA01_PIA69",
+					"Exp_CDB_PIA01_PIA70",
+					"Exp_CDB_PIA01_PIA71",
+					"Exp_CDB_PIA01_PIA72",
+					"Exp_CDB_PIA01_PIA73",
+					"Exp_CDB_PIA01_PIA74",
+					"Exp_CDB_PIA01_PIA75",
+					"Exp_CDB_PIA01_PIA76",
+					"Exp_CDB_PIA01_PIA77",
+					"Exp_CDB_PIA01_PIA78",
+					"Exp_CDB_PIA01_PIA79",
+					"Exp_CDB_PIA01_PIA80",
+					"Exp_CDB_PIA01_PIA81",
+					"Exp_CDB_PIA01_PIA82",
+					"Exp_CDB_PIA01_PIA83",
+					"Exp_CDB_PIA01_PIA84",
+					"Exp_CDB_PIA01_PIA85",
+					"Exp_CDB_PIA01_PIA86",
+					"Exp_CDB_PIA01_PIA87",
+					"Exp_CDB_PIA01_PIA88",
+					"Exp_CDB_PIA01_PIA89",
+					"Exp_CDB_PIA01_PIA90"
+				]
+			},
+			"tables": {
+				"type": "Array",
+				"defaultValue": [
+					"tdalgrek",
+					"tdjaar",
+					"tdboekper",
+					"tdklant",
+					"tdlev",
+					"tddagbfin",
+					"tddockla",
+					"tddoclev",
+					"tdaandet",
+					"tdaanan",
+					"tdaankoop",
+					"tddagbaan",
+					"tddagbdiv",
+					"tdverkoop",
+					"tddagbver",
+					"tdveran",
+					"tddivan",
+					"tddivdet",
+					"tddivers",
+					"tdfinanan",
+					"tdfinan",
+					"tdfindet",
+					"tdverdet",
+					"tdanniv1",
+					"tdanniv2"
+				]
+			},
+			"watermark": {
+				"type": "String"
+			},
+			"excludedDatabases": {
+				"type": "Array",
+				"defaultValue": [
+					"Eol_CDB_PIA01_PIA49",
+					"Exp_CDB_PIA01_PIA79"
+				]
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2026-02-11T08:12:31Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
