@@ -1,0 +1,22 @@
+{
+	"name": "ls_pi86_REN_odbc_adminconsult",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"description": "PIA 86 RENSON DIRECT TO SOURCE LINKED SERVICE",
+		"annotations": [],
+		"type": "Odbc",
+		"typeProperties": {
+			"connectionString": {
+				"type": "SecureString",
+				"value": "**********"
+			},
+			"authenticationType": "Basic",
+			"userName": "ACRO_PIA",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiIyM2RmNzA0MC1iOWEwLTQyZjUtYjc0Ny1lYWM4MjVhMWE2M2QiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "PIA86-REN",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
