@@ -1,0 +1,7 @@
+{
+	"name": "PIA87-PME",
+	"properties": {
+		"type": "SelfHosted",
+		"description": "PIA87 - PME ASSIST"
+	}
+}
